@@ -1,196 +1,20 @@
 /* 全局样式 */
 body {
-  font-family: 'Comic Sans MS', cursive, sans-serif; /* 卡通字体 */
-  line-height: 1.6;
-  margin: 0;
-  padding: 0;
-  background-color: #f5f7fa;
+    font-family: 'Comic Sans MS', cursive, sans-serif;
+    line-height: 1.6;
+    margin: 0;
+    padding: 0;
+    background-color: #f5f7fa;
 }
 
-/* 导航条样式 */
-.navbar {
-  background-color: #409EFF; 
-  overflow: hidden;
-  display: flex;
-  align-items: center;
-  padding: 15px 30px;
-  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
-  justify-content: space-between; /* 让标题和导航项分开 */
-}
+/* 引入其他样式文件 */
+@import 'navbar.css';
+@import 'sidebar.css';
+@import 'blog-summary.css';
 
-.nav-title {
-  color: white;
-  margin: 0;
-  font-size: 24px;
-}
-
-.nav-item {
-  color: white;
-  text-align: center;
-  padding: 12px 20px;
-  text-decoration: none;
-  font-size: 18px;
-  border-radius: 4px;
-  transition: all 0.3s ease; /* 添加过渡效果 */
-}
-
-.nav-item:hover {
-  background-color: rgba(255, 255, 255, 0.1);
-}
-
-.nav-item.active {
-  background-color: rgba(255, 255, 255, 0.2);
-}
-
-/* 文章概要样式 */
-.blog-summary {
-  background-color: white;
-  border: 1px solid #dcdfe6;
-  border-radius: 8px;
-  padding: 25px;
-  margin: 20px auto;
-  max-width: 800px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
-  display: flex; /* 使用 flex 布局 */
-  flex-wrap: wrap; /* 允许换行 */
-  align-items: center; /* 垂直居中对齐 */
-}
-
-.blog-summary h2 {
-  margin-top: 0;
-  color: #303133;
-  transition: color 0.3s ease;
-}
-
-.blog-summary p {
-  color: #606266;
-}
-
-.blog-summary:hover {
-  transform: translateY(-5px); /* 鼠标悬停上移动画 */
-  box-shadow: 0 4px 20px 0 rgba(0, 0, 0, 0.15);
-}
-
-.blog-summary:hover h2 {
-  color: #409EFF;
-}
-
-.blog-summary img {
-  max-width: 30%; /* 限制图片最大宽度 */
-  height: auto; /* 保持图片比例 */
-  margin-right: 20px; /* 图片与文字之间的间距 */
-  border-radius: 4px; /* 图片圆角 */
-}
-
-/* 当图片在右侧时，调整间距 */
-.blog-summary img.right-image {
-  margin-right: 0;
-  margin-left: 20px;
-}
-
-/* 文章详情样式 */
-#blog-detail {
-  padding: 20px;
-  max-width: 800px;
-  margin: 0 auto;
-}
-
-#blog-detail button {
-  background-color: #409EFF;
-  color: white;
-  padding: 12px 24px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 16px;
-  transition: background-color 0.3s ease;
-}
-
-#blog-detail button:hover {
-  background-color: #66b1ff;
-}
-
-/* 侧边栏整体样式 */
-.sidebar {
-    background-color: white;
-    border: 1px solid #dcdfe6;
-    border-radius: 8px;
-    padding: 20px;
-    width: 250px;
-    height: 80%;
-    box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
-    transition: all 0.3s ease;
-}
-
-.sidebar:hover {
-    box-shadow: 0 4px 20px 0 rgba(0, 0, 0, 0.15);
-}
-
-/* 主容器布局，让侧边栏和文章概要并排 */
-.main-container {
+/* 主容器样式 */
+.主容器 {
     display: flex;
-    gap: 20px;
     padding: 20px;
-    max-width: 1200px;
-    margin: 0 auto;
-}
-
-#blog-summaries {
-    flex: 1;
-}
-
-/* 头像容器样式 */
-#avatar-container {
-    text-align: center; /* 让头像和名字都居中 */
-}
-
-.avatar {
-    width: 150px; /* 可根据需要调整头像大小 */
-    height: 150px;
-    border-radius: 50%;
-    margin-bottom: 10px; /* 头像和名字之间的间距 */
-}
-
-/* 个人信息名字样式 */
-#personal-info h2 {
-    text-align: center; /* 确保名字居中 */
-    margin: 0; /* 去除默认边距 */
-}
-
-/* 个人简介样式 */
-#personal-info p {
-    text-align: center; /* 简介也居中显示 */
-    color: #666; /* 简介文字颜色 */
-}
-
-#avatar-container img {
-    width: 120px;
-    height: 120px;
-    border-radius: 50%;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    transition: transform 0.3s ease;
-}
-
-#avatar-container img:hover {
-    transform: scale(1.1);
-}
-
-.blog-summary {
-    display: flex;
-    align-items: center;
     gap: 20px;
-}
-
-.text-container {
-    flex: 1;
-}
-
-.left-image {
-    order: -1; /* 让图片显示在左侧 */
-}
-
-.right-image {
-    order: 1; /* 让图片显示在右侧 */
 }
