@@ -1,23 +1,832 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>基于金山文档的博客系统</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="navbar.css">
-    <link rel="stylesheet" href="sidebar.css">
-    <link rel="stylesheet" href="blog-summary.css">
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' width='50' height='50'><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' font-size='80'>🌐</text></svg>">
-    <script src="marked.min.js"></script>
-    <script src="script.js" type="module"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>客户抢单系统</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.6.0/remixicon.min.css" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com/3.4.16"></script>
+<script>
+tailwind.config={
+theme:{
+extend:{
+colors:{
+primary:'#3370ff',
+secondary:'#6b7280'
+},
+borderRadius:{
+'none':'0px',
+'sm':'4px',
+DEFAULT:'8px',
+'md':'12px',
+'lg':'16px',
+'xl':'20px',
+'2xl':'24px',
+'3xl':'32px',
+'full':'9999px',
+'button':'8px'
+}
+}
+}
+}
+</script>
+<style>
+:where([class^="ri-"])::before { content: "\f3c2"; }
+body {
+min-height: 100vh;
+background-color: #f9fafb;
+}
+.feishu-logo {
+background-image: url('https://readdy.ai/api/search-image?query=feishu%20logo%20on%20a%20clean%20white%20background%2C%20minimalist%20design%2C%20blue%20color%20scheme%2C%20professional%20corporate%20identity%2C%20high%20quality%20vector%20logo&width=200&height=60&seq=1&orientation=landscape');
+background-size: contain;
+background-repeat: no-repeat;
+background-position: center;
+}
+input:focus {
+outline: none;
+border-color: #3370ff;
+}
+input[type="checkbox"] {
+appearance: none;
+width: 16px;
+height: 16px;
+border: 1px solid #d1d5db;
+border-radius: 4px;
+background-color: white;
+cursor: pointer;
+}
+input[type="checkbox"]:checked {
+background-color: #3370ff;
+border-color: #3370ff;
+background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='white'%3E%3Cpath fill-rule='evenodd' d='M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z' clip-rule='evenodd'/%3E%3C/svg%3E");
+}
+.custom-switch {
+position: relative;
+display: inline-block;
+width: 40px;
+height: 20px;
+}
+.custom-switch input {
+opacity: 0;
+width: 0;
+height: 0;
+}
+.slider {
+position: absolute;
+cursor: pointer;
+top: 0;
+left: 0;
+right: 0;
+bottom: 0;
+background-color: #ccc;
+transition: .4s;
+border-radius: 20px;
+}
+.slider:before {
+position: absolute;
+content: "";
+height: 16px;
+width: 16px;
+left: 2px;
+bottom: 2px;
+background-color: white;
+transition: .4s;
+border-radius: 50%;
+}
+input:checked + .slider {
+background-color: #3370ff;
+}
+input:checked + .slider:before {
+transform: translateX(20px);
+}
+</style>
 </head>
 <body>
-    <div id="导航容器"></div>
-    <div class="主容器">
-        <div id="博客摘要容器"></div>
-        <div id="侧边栏容器"></div>
-    </div>
-    <div id="博客详情" style="display: none;"></div>
+<div id="app" class="min-h-screen">
+<!-- 未登录状态 -->
+<div id="unauthenticated-view" class="min-h-screen flex flex-col">
+<!-- 顶部Logo -->
+<header class="w-full py-6 flex justify-center">
+<div class="font-['Pacifico'] text-3xl text-primary">logo</div>
+</header>
+<!-- 主体内容 -->
+<main class="flex-grow flex flex-col md:flex-row w-full max-w-7xl mx-auto px-4 py-8">
+<!-- 左侧登录区域 -->
+<div class="w-full md:w-1/2 flex items-center justify-center p-6">
+<div class="w-full max-w-md bg-white shadow-lg rounded-lg p-8">
+<div class="mb-8">
+<div class="feishu-logo h-12 mb-6"></div>
+<h2 class="text-2xl font-bold text-gray-800 mb-2">飞书账号登录</h2>
+<p class="text-gray-500">登录后即可使用全部功能</p>
+</div>
+<form id="login-form" class="space-y-6">
+<div>
+<label for="username" class="block text-sm font-medium text-gray-700 mb-1">飞书账号</label>
+<div class="relative">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+<i class="ri-user-line text-gray-400"></i>
+</div>
+<input type="text" id="username" name="username" class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-button text-gray-900 placeholder-gray-400" placeholder="请输入飞书账号" required>
+</div>
+</div>
+<div>
+<label for="password" class="block text-sm font-medium text-gray-700 mb-1">飞书密码</label>
+<div class="relative">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+<i class="ri-lock-line text-gray-400"></i>
+</div>
+<input type="password" id="password" name="password" class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-button text-gray-900 placeholder-gray-400" placeholder="请输入飞书密码" required>
+</div>
+</div>
+<div class="flex items-center justify-between">
+<div class="flex items-center">
+<input id="remember-me" name="remember-me" type="checkbox" class="mr-2">
+<label for="remember-me" class="text-sm text-gray-600">记住我</label>
+</div>
+<a href="#" class="text-sm text-primary hover:text-primary/80">忘记密码？</a>
+</div>
+<button type="submit" class="w-full bg-primary text-white py-2 px-4 rounded-button hover:bg-primary/90 transition duration-200 flex items-center justify-center !rounded-button whitespace-nowrap">
+<i class="ri-login-box-line mr-2"></i>登录
+</button>
+</form>
+</div>
+</div>
+<!-- 右侧品牌展示区 -->
+<div class="w-full md:w-1/2 p-6 flex items-center justify-center">
+<div class="max-w-lg">
+<h2 class="text-3xl font-bold text-gray-800 mb-6">高效客户抢单系统</h2>
+<div class="space-y-6">
+<div class="flex items-start">
+<div class="w-10 h-10 flex items-center justify-center rounded-full bg-primary/10 text-primary mr-4">
+<i class="ri-flashlight-line ri-lg"></i>
+</div>
+<div>
+<h3 class="font-semibold text-lg text-gray-800">快速抢单</h3>
+<p class="text-gray-600 mt-1">一键登记客户信息，提高抢单效率</p>
+</div>
+</div>
+<div class="flex items-start">
+<div class="w-10 h-10 flex items-center justify-center rounded-full bg-primary/10 text-primary mr-4">
+<i class="ri-line-chart-line ri-lg"></i>
+</div>
+<div>
+<h3 class="font-semibold text-lg text-gray-800">数据分析</h3>
+<p class="text-gray-600 mt-1">实时统计抢单成功率，优化业务策略</p>
+</div>
+</div>
+<div class="flex items-start">
+<div class="w-10 h-10 flex items-center justify-center rounded-full bg-primary/10 text-primary mr-4">
+<i class="ri-team-line ri-lg"></i>
+</div>
+<div>
+<h3 class="font-semibold text-lg text-gray-800">团队协作</h3>
+<p class="text-gray-600 mt-1">多人协同作业，提高团队整体效率</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- 底部公告区 -->
+<footer class="w-full bg-white border-t border-gray-200 py-6">
+<div class="max-w-7xl mx-auto px-4">
+<div class="mb-4">
+<h3 class="text-lg font-semibold text-gray-800 mb-3">公告栏</h3>
+<div class="bg-gray-50 rounded-lg p-4">
+<div class="flex items-start mb-3">
+<div class="w-8 h-8 flex items-center justify-center rounded-full bg-primary/10 text-primary mr-3 flex-shrink-0">
+<i class="ri-volume-up-line"></i>
+</div>
+<div>
+<p class="font-medium text-gray-800">系统将于 2025 年 6 月 15 日进行维护升级</p>
+<p class="text-sm text-gray-500 mt-1">维护时间：22:00-24:00，请提前做好工作安排</p>
+</div>
+</div>
+<div class="flex items-start">
+<div class="w-8 h-8 flex items-center justify-center rounded-full bg-primary/10 text-primary mr-3 flex-shrink-0">
+<i class="ri-award-line"></i>
+</div>
+<div>
+<p class="font-medium text-gray-800">恭喜王晓燕团队上月抢单成功率达 87%</p>
+<p class="text-sm text-gray-500 mt-1">创造了新的团队记录，请各位向王晓燕团队学习</p>
+</div>
+</div>
+</div>
+</div>
+<div class="text-center text-sm text-gray-500">
+<p>© 2025 客户抢单系统 版权所有</p>
+</div>
+</div>
+</footer>
+</div>
+<!-- 已登录状态 -->
+<div id="authenticated-view" class="min-h-screen flex flex-col hidden">
+<!-- 顶部导航 -->
+<header class="w-full bg-white shadow-sm">
+<div class="max-w-7xl mx-auto px-4 flex items-center justify-between h-16">
+<div class="flex items-center">
+<div class="font-['Pacifico'] text-2xl text-primary mr-8">logo</div>
+<nav class="hidden md:flex space-x-6">
+<a href="#" class="text-primary font-medium">抢单中心</a>
+<a href="https://readdy.ai/home/3ba47eae-3d3d-4c3e-acf6-c6c3f3b38a21/e51538b2-d20f-4a96-8727-c156db7ade7d" data-readdy="true" class="text-gray-600 hover:text-primary">数据统计</a>
+<a href="#" class="text-gray-600 hover:text-primary">博客</a>
+<a href="#" class="text-gray-600 hover:text-primary">留言池</a>
+</nav>
+</div>
+<div class="flex items-center space-x-4">
+<div class="relative">
+<button class="flex items-center text-gray-700 hover:text-primary">
+<i class="ri-notification-3-line ri-lg"></i>
+</button>
+<span class="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full"></span>
+</div>
+<div class="flex items-center">
+<div class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary mr-2">
+<i class="ri-user-line"></i>
+</div>
+<span class="text-gray-700 mr-2" id="current-user">张明</span>
+<button id="logout-btn" class="text-gray-500 hover:text-primary">
+<i class="ri-logout-box-r-line"></i>
+</button>
+</div>
+</div>
+</div>
+</header>
+<!-- 主体内容 -->
+<main class="flex-grow bg-gray-50">
+<div class="max-w-7xl mx-auto px-4 py-8">
+<!-- 顶部统计卡片 -->
+<div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+<div class="bg-white rounded-lg shadow p-6">
+<div class="flex items-center justify-between mb-4">
+<h3 class="text-gray-500 text-sm font-medium">今日抢单</h3>
+<div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+<i class="ri-calendar-check-line ri-lg"></i>
+</div>
+</div>
+<div class="flex items-end">
+<span class="text-2xl font-bold text-gray-800">24</span>
+<span class="ml-2 text-sm text-green-500 flex items-center">
+<i class="ri-arrow-up-s-line"></i>12%
+</span>
+</div>
+</div>
+<div class="bg-white rounded-lg shadow p-6">
+<div class="flex items-center justify-between mb-4">
+<h3 class="text-gray-500 text-sm font-medium">抢单成功率</h3>
+<div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+<i class="ri-percent-line ri-lg"></i>
+</div>
+</div>
+<div class="flex items-end">
+<span class="text-2xl font-bold text-gray-800">68%</span>
+<span class="ml-2 text-sm text-green-500 flex items-center">
+<i class="ri-arrow-up-s-line"></i>5%
+</span>
+</div>
+</div>
+<div class="bg-white rounded-lg shadow p-6">
+<div class="flex items-center justify-between mb-4">
+<h3 class="text-gray-500 text-sm font-medium">本月抢单</h3>
+<div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+<i class="ri-bar-chart-line ri-lg"></i>
+</div>
+</div>
+<div class="flex items-end">
+<span class="text-2xl font-bold text-gray-800">186</span>
+<span class="ml-2 text-sm text-green-500 flex items-center">
+<i class="ri-arrow-up-s-line"></i>8%
+</span>
+</div>
+</div>
+<div class="bg-white rounded-lg shadow p-6">
+<div class="flex items-center justify-between mb-4">
+<h3 class="text-gray-500 text-sm font-medium">团队排名</h3>
+<div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+<i class="ri-team-line ri-lg"></i>
+</div>
+</div>
+<div class="flex items-end">
+<span class="text-2xl font-bold text-gray-800">3</span>
+<span class="ml-2 text-sm text-red-500 flex items-center">
+<i class="ri-arrow-down-s-line"></i>1
+</span>
+</div>
+</div>
+</div>
+<!-- 主要内容区 -->
+<div class="flex flex-col lg:flex-row gap-8">
+<!-- 左侧抢单记录 -->
+<div class="w-full lg:w-2/3">
+<div class="bg-white rounded-lg shadow">
+<div class="p-6 border-b border-gray-200">
+<div class="flex flex-wrap items-center justify-between gap-4">
+<h2 class="text-xl font-bold text-gray-800">抢单记录</h2>
+<div class="flex items-center space-x-4">
+<div class="relative">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+<i class="ri-search-line text-gray-400"></i>
+</div>
+<input type="text" placeholder="搜索客户名称" class="pl-10 pr-4 py-2 border border-gray-300 rounded-button text-sm">
+</div>
+<button class="bg-primary text-white px-4 py-2 rounded-button flex items-center !rounded-button whitespace-nowrap">
+<i class="ri-add-line mr-1"></i>新增抢单
+</button>
+</div>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="min-w-full divide-y divide-gray-200">
+<thead class="bg-gray-50">
+<tr>
+<th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">飞书账号</th>
+<th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">客户名称</th>
+<th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">抢单时间</th>
+<th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">状态</th>
+<th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">操作</th>
+</tr>
+</thead>
+<tbody class="bg-white divide-y divide-gray-200">
+<tr>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">zhang.ming@feishu.com</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">北京智慧科技有限公司</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">2025-06-12 09:23</td>
+<td class="px-6 py-4 whitespace-nowrap">
+<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">抢单成功</span>
+</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+<button class="text-primary hover:text-primary/80">详情</button>
+</td>
+</tr>
+<tr>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">zhang.ming@feishu.com</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">上海云创数字科技有限公司</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">2025-06-12 08:45</td>
+<td class="px-6 py-4 whitespace-nowrap">
+<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">抢单失败</span>
+</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+<button class="text-primary hover:text-primary/80">详情</button>
+</td>
+</tr>
+<tr>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">li.juan@feishu.com</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">广州未来教育科技有限公司</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">2025-06-11 16:38</td>
+<td class="px-6 py-4 whitespace-nowrap">
+<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">抢单成功</span>
+</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+<button class="text-primary hover:text-primary/80">详情</button>
+</td>
+</tr>
+<tr>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">wang.chen@feishu.com</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">深圳智联网络科技有限公司</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">2025-06-11 14:12</td>
+<td class="px-6 py-4 whitespace-nowrap">
+<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">抢单成功</span>
+</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+<button class="text-primary hover:text-primary/80">详情</button>
+</td>
+</tr>
+<tr>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">zhang.ming@feishu.com</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">杭州数字金融服务有限公司</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">2025-06-11 10:05</td>
+<td class="px-6 py-4 whitespace-nowrap">
+<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">处理中</span>
+</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+<button class="text-primary hover:text-primary/80">详情</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="px-6 py-4 flex items-center justify-between border-t border-gray-200">
+<div class="text-sm text-gray-500">
+显示 <span class="font-medium">1</span> 到 <span class="font-medium">5</span> 条，共 <span class="font-medium">28</span> 条记录
+</div>
+<div class="flex items-center space-x-2">
+<button class="px-3 py-1 border border-gray-300 rounded-button text-sm text-gray-500 hover:bg-gray-50 !rounded-button whitespace-nowrap">上一页</button>
+<button class="px-3 py-1 border border-gray-300 bg-primary text-white rounded-button text-sm !rounded-button whitespace-nowrap">1</button>
+<button class="px-3 py-1 border border-gray-300 rounded-button text-sm text-gray-500 hover:bg-gray-50 !rounded-button whitespace-nowrap">2</button>
+<button class="px-3 py-1 border border-gray-300 rounded-button text-sm text-gray-500 hover:bg-gray-50 !rounded-button whitespace-nowrap">3</button>
+<button class="px-3 py-1 border border-gray-300 rounded-button text-sm text-gray-500 hover:bg-gray-50 !rounded-button whitespace-nowrap">下一页</button>
+</div>
+</div>
+</div>
+</div>
+<!-- 右侧功能区 -->
+<div class="w-full lg:w-1/3 space-y-8">
+<!-- 新增抢单 -->
+<div class="bg-white rounded-lg shadow p-6">
+<h3 class="text-lg font-bold text-gray-800 mb-4">新增抢单</h3>
+<form class="space-y-4">
+<div>
+<label for="customer-name" class="block text-sm font-medium text-gray-700 mb-1">客户名称</label>
+<input type="text" id="customer-name" class="w-full px-3 py-2 border border-gray-300 rounded-button text-gray-900 placeholder-gray-400" placeholder="请输入客户名称">
+</div>
+<div>
+<label for="customer-contact" class="block text-sm font-medium text-gray-700 mb-1">联系人</label>
+<input type="text" id="customer-contact" class="w-full px-3 py-2 border border-gray-300 rounded-button text-gray-900 placeholder-gray-400" placeholder="请输入联系人姓名">
+</div>
+<div>
+<label for="customer-phone" class="block text-sm font-medium text-gray-700 mb-1">联系电话</label>
+<input type="text" id="customer-phone" class="w-full px-3 py-2 border border-gray-300 rounded-button text-gray-900 placeholder-gray-400" placeholder="请输入联系电话">
+</div>
+<div>
+<label for="grab-time" class="block text-sm font-medium text-gray-700 mb-1">抢单时间</label>
+<input type="datetime-local" id="grab-time" class="w-full px-3 py-2 border border-gray-300 rounded-button text-gray-900">
+</div>
+<div>
+<label class="block text-sm font-medium text-gray-700 mb-1">优先级</label>
+<div class="flex space-x-4">
+<label class="inline-flex items-center">
+<input type="radio" name="priority" value="high" class="form-radio text-primary">
+<span class="ml-2 text-sm text-gray-700">高</span>
+</label>
+<label class="inline-flex items-center">
+<input type="radio" name="priority" value="medium" class="form-radio text-primary" checked>
+<span class="ml-2 text-sm text-gray-700">中</span>
+</label>
+<label class="inline-flex items-center">
+<input type="radio" name="priority" value="low" class="form-radio text-primary">
+<span class="ml-2 text-sm text-gray-700">低</span>
+</label>
+</div>
+</div>
+<div>
+<label for="remarks" class="block text-sm font-medium text-gray-700 mb-1">备注</label>
+<textarea id="remarks" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-button text-gray-900 placeholder-gray-400" placeholder="请输入备注信息"></textarea>
+</div>
+<button type="submit" class="w-full bg-primary text-white py-2 px-4 rounded-button hover:bg-primary/90 transition duration-200 !rounded-button whitespace-nowrap">提交</button>
+</form>
+</div>
+<!-- 个人抢单统计 -->
+<div class="bg-white rounded-lg shadow p-6">
+<h3 class="text-lg font-bold text-gray-800 mb-4">个人抢单统计</h3>
+<div class="h-64" id="personal-stats-chart"></div>
+</div>
+</div>
+</div>
+<!-- 底部功能区 -->
+<div class="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
+<!-- 管理员公告 -->
+<div class="bg-white rounded-lg shadow p-6">
+<div class="flex items-center justify-between mb-4">
+<h3 class="text-lg font-bold text-gray-800">管理员公告</h3>
+<span class="text-xs text-gray-500">更多</span>
+</div>
+<div class="space-y-4">
+<div class="border-l-4 border-primary pl-4 py-1">
+<p class="text-gray-800 font-medium">系统功能更新通知</p>
+<p class="text-sm text-gray-500 mt-1">新增数据导出功能，支持 Excel 和 PDF 格式</p>
+<p class="text-xs text-gray-400 mt-1">2025-06-10 10:30</p>
+</div>
+<div class="border-l-4 border-primary pl-4 py-1">
+<p class="text-gray-800 font-medium">团队抢单竞赛开始</p>
+<p class="text-sm text-gray-500 mt-1">6 月团队抢单竞赛正式开始，冠军团队将获得额外奖金</p>
+<p class="text-xs text-gray-400 mt-1">2025-06-01 09:00</p>
+</div>
+</div>
+</div>
+<!-- 博客入口 -->
+<div class="bg-white rounded-lg shadow p-6">
+<div class="flex items-center justify-between mb-4">
+<h3 class="text-lg font-bold text-gray-800">最新博客</h3>
+<span class="text-xs text-gray-500">更多</span>
+</div>
+<div class="space-y-4">
+<a href="#" class="block group">
+<h4 class="text-gray-800 font-medium group-hover:text-primary">如何提高抢单成功率？</h4>
+<p class="text-sm text-gray-500 mt-1 line-clamp-2">分享几个提高抢单成功率的实用技巧，帮助你在激烈的竞争中脱颖而出...</p>
+<div class="flex items-center text-xs text-gray-400 mt-2">
+<span>张明</span>
+<span class="mx-2">·</span>
+<span>2025-06-08</span>
+</div>
+</a>
+<a href="#" class="block group">
+<h4 class="text-gray-800 font-medium group-hover:text-primary">客户沟通的艺术</h4>
+<p class="text-sm text-gray-500 mt-1 line-clamp-2">有效的客户沟通不仅能提高成单率，还能建立长期稳定的客户关系...</p>
+<div class="flex items-center text-xs text-gray-400 mt-2">
+<span>李娟</span>
+<span class="mx-2">·</span>
+<span>2025-06-05</span>
+</div>
+</a>
+</div>
+</div>
+<!-- 留言池 -->
+<div class="bg-white rounded-lg shadow p-6">
+<div class="flex items-center justify-between mb-4">
+<h3 class="text-lg font-bold text-gray-800">留言池</h3>
+<span class="text-xs text-gray-500">更多</span>
+</div>
+<div class="space-y-4 mb-4">
+<div class="flex items-start">
+<div class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary flex-shrink-0 mr-3">
+<i class="ri-user-line"></i>
+</div>
+<div>
+<div class="flex items-center">
+<span class="font-medium text-gray-800 mr-2">王晓燕</span>
+<span class="text-xs text-gray-500">2025-06-11</span>
+</div>
+<p class="text-sm text-gray-600 mt-1">建议增加客户跟进提醒功能，方便我们及时跟进潜在客户</p>
+</div>
+</div>
+<div class="flex items-start">
+<div class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary flex-shrink-0 mr-3">
+<i class="ri-user-line"></i>
+</div>
+<div>
+<div class="flex items-center">
+<span class="font-medium text-gray-800 mr-2">赵建国</span>
+<span class="text-xs text-gray-500">2025-06-10</span>
+</div>
+<p class="text-sm text-gray-600 mt-1">系统很好用，希望能增加批量导入客户信息的功能</p>
+</div>
+</div>
+</div>
+<div class="relative">
+<input type="text" placeholder="写下你的留言..." class="w-full pl-4 pr-10 py-2 border border-gray-300 rounded-button text-sm">
+<button class="absolute right-2 top-1/2 transform -translate-y-1/2 text-primary">
+<i class="ri-send-plane-line"></i>
+</button>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- 底部版权 -->
+<footer class="bg-white border-t border-gray-200 py-4">
+<div class="max-w-7xl mx-auto px-4 text-center text-sm text-gray-500">
+<p>© 2025 客户抢单系统 版权所有</p>
+</div>
+</footer>
+</div>
+</div>
+<!-- 引入 ECharts -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.5.0/echarts.min.js"></script>
+<!-- 登录验证脚本 -->
+<script id="login-script">
+document.addEventListener('DOMContentLoaded', function() {
+const loginForm = document.getElementById('login-form');
+const unauthenticatedView = document.getElementById('unauthenticated-view');
+const authenticatedView = document.getElementById('authenticated-view');
+const logoutBtn = document.getElementById('logout-btn');
+const currentUser = document.getElementById('current-user');
+// 检查是否已登录
+const checkLoginStatus = () => {
+const isLoggedIn = localStorage.getItem('isLoggedIn');
+const username = localStorage.getItem('username');
+if (isLoggedIn === 'true' && username) {
+unauthenticatedView.classList.add('hidden');
+authenticatedView.classList.remove('hidden');
+currentUser.textContent = username.split('@')[0];
+} else {
+unauthenticatedView.classList.remove('hidden');
+authenticatedView.classList.add('hidden');
+}
+};
+// 初始检查登录状态
+checkLoginStatus();
+// 登录表单提交
+loginForm.addEventListener('submit', function(e) {
+e.preventDefault();
+const username = document.getElementById('username').value;
+const password = document.getElementById('password').value;
+const rememberMe = document.getElementById('remember-me').checked;
+// 简单验证
+if (!username || !password) {
+alert('请输入飞书账号和密码');
+return;
+}
+// 模拟登录验证
+if (password.length >= 6) {
+localStorage.setItem('isLoggedIn', 'true');
+localStorage.setItem('username', username);
+if (rememberMe) {
+localStorage.setItem('rememberMe', 'true');
+} else {
+localStorage.removeItem('rememberMe');
+}
+checkLoginStatus();
+} else {
+alert('密码长度不足，请输入至少6位密码');
+}
+});
+// 退出登录
+logoutBtn.addEventListener('click', function() {
+localStorage.removeItem('isLoggedIn');
+if (localStorage.getItem('rememberMe') !== 'true') {
+localStorage.removeItem('username');
+}
+checkLoginStatus();
+});
+});
+</script>
+<!-- 图表脚本 -->
+<script id="chart-script">
+document.addEventListener('DOMContentLoaded', function() {
+// 个人抢单统计图表
+const initPersonalStatsChart = () => {
+const chartDom = document.getElementById('personal-stats-chart');
+if (!chartDom) return;
+const myChart = echarts.init(chartDom);
+const option = {
+animation: false,
+tooltip: {
+trigger: 'axis',
+backgroundColor: 'rgba(255, 255, 255, 0.8)',
+borderColor: '#e2e8f0',
+textStyle: {
+color: '#1f2937'
+}
+},
+legend: {
+data: ['抢单数', '成功数'],
+bottom: 0
+},
+grid: {
+left: '3%',
+right: '4%',
+bottom: '15%',
+top: '10%',
+containLabel: true
+},
+xAxis: {
+type: 'category',
+boundaryGap: false,
+data: ['6.6', '6.7', '6.8', '6.9', '6.10', '6.11', '6.12'],
+axisLine: {
+lineStyle: {
+color: '#e2e8f0'
+}
+},
+axisLabel: {
+color: '#1f2937'
+}
+},
+yAxis: {
+type: 'value',
+axisLine: {
+show: false
+},
+axisLabel: {
+color: '#1f2937'
+},
+splitLine: {
+lineStyle: {
+color: '#e2e8f0'
+}
+}
+},
+series: [
+{
+name: '抢单数',
+type: 'line',
+smooth: true,
+lineStyle: {
+width: 3,
+color: 'rgba(87, 181, 231, 1)'
+},
+symbol: 'none',
+areaStyle: {
+color: {
+type: 'linear',
+x: 0,
+y: 0,
+x2: 0,
+y2: 1,
+colorStops: [{
+offset: 0, color: 'rgba(87, 181, 231, 0.2)'
+}, {
+offset: 1, color: 'rgba(87, 181, 231, 0.01)'
+}]
+}
+},
+data: [5, 7, 3, 9, 6, 8, 10]
+},
+{
+name: '成功数',
+type: 'line',
+smooth: true,
+lineStyle: {
+width: 3,
+color: 'rgba(141, 211, 199, 1)'
+},
+symbol: 'none',
+areaStyle: {
+color: {
+type: 'linear',
+x: 0,
+y: 0,
+x2: 0,
+y2: 1,
+colorStops: [{
+offset: 0, color: 'rgba(141, 211, 199, 0.2)'
+}, {
+offset: 1, color: 'rgba(141, 211, 199, 0.01)'
+}]
+}
+},
+data: [3, 4, 2, 7, 4, 6, 7]
+}
+]
+};
+myChart.setOption(option);
+window.addEventListener('resize', function() {
+myChart.resize();
+});
+};
+// 初始化图表
+initPersonalStatsChart();
+});
+</script>
+<!-- 表单控件交互脚本 -->
+<script id="form-controls-script">
+document.addEventListener('DOMContentLoaded', function() {
+// 自定义单选框和复选框样式
+const setupCustomFormControls = () => {
+// 单选框样式
+const radioInputs = document.querySelectorAll('input[type="radio"]');
+radioInputs.forEach(radio => {
+radio.classList.add('hidden');
+const wrapper = document.createElement('span');
+wrapper.className = 'inline-block w-4 h-4 rounded-full border border-gray-300 mr-2 flex-shrink-0 relative';
+const dot = document.createElement('span');
+dot.className = 'absolute inset-1 rounded-full bg-primary transform scale-0 transition-transform duration-200';
+wrapper.appendChild(dot);
+radio.parentNode.insertBefore(wrapper, radio);
+// 初始状态
+if (radio.checked) {
+dot.classList.remove('scale-0');
+dot.classList.add('scale-100');
+wrapper.classList.add('border-primary');
+}
+// 点击事件
+wrapper.addEventListener('click', () => {
+const name = radio.getAttribute('name');
+document.querySelectorAll(`input[name="${name}"]`).forEach(r => {
+const siblingDot = r.previousElementSibling.querySelector('span');
+const siblingWrapper = r.previousElementSibling;
+if (r === radio) {
+r.checked = true;
+siblingDot.classList.remove('scale-0');
+siblingDot.classList.add('scale-100');
+siblingWrapper.classList.add('border-primary');
+} else {
+r.checked = false;
+siblingDot.classList.remove('scale-100');
+siblingDot.classList.add('scale-0');
+siblingWrapper.classList.remove('border-primary');
+}
+});
+});
+});
+// 复选框样式
+const checkboxInputs = document.querySelectorAll('input[type="checkbox"]');
+checkboxInputs.forEach(checkbox => {
+checkbox.classList.add('hidden');
+const wrapper = document.createElement('span');
+wrapper.className = 'inline-block w-4 h-4 rounded border border-gray-300 mr-2 flex-shrink-0 relative';
+const checkmark = document.createElement('span');
+checkmark.className = 'absolute inset-0 flex items-center justify-center text-white opacity-0 transition-opacity duration-200';
+checkmark.innerHTML = '<i class="ri-check-line ri-xs"></i>';
+wrapper.appendChild(checkmark);
+checkbox.parentNode.insertBefore(wrapper, checkbox);
+// 初始状态
+if (checkbox.checked) {
+checkmark.classList.remove('opacity-0');
+checkmark.classList.add('opacity-100');
+wrapper.classList.add('bg-primary', 'border-primary');
+}
+// 点击事件
+wrapper.addEventListener('click', () => {
+checkbox.checked = !checkbox.checked;
+if (checkbox.checked) {
+checkmark.classList.remove('opacity-0');
+checkmark.classList.add('opacity-100');
+wrapper.classList.add('bg-primary', 'border-primary');
+} else {
+checkmark.classList.remove('opacity-100');
+checkmark.classList.add('opacity-0');
+wrapper.classList.remove('bg-primary', 'border-primary');
+}
+});
+});
+};
+// 初始化自定义表单控件
+setupCustomFormControls();
+});
+</script>
 </body>
 </html>
