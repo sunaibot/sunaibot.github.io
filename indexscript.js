@@ -1,9 +1,9 @@
 // 飞书云文档API配置
 const API_CONFIG = {
   baseUrl: "https://www.kdocs.cn/api/v3/ide/file/:file_id/script/:script_id/sync_task",
-  token: "xxx", // 替换为实际的令牌
-  fileId: ":file_id", // 替换为实际的文件ID
-  scriptId: ":script_id" // 替换为实际的脚本ID
+  token: "6pGQUK9bFZUsOZqijSs7Vs", // 替换为实际的令牌
+  fileId: ":ckHF3lpIzrlO", // 替换为实际的文件ID
+  scriptId: ":V2-7L58na42zKAfuIc9afa5bo" // 替换为实际的脚本ID
 };
 
 // DOM元素引用
