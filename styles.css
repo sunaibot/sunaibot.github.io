@@ -1,0 +1,81 @@
+:where([class^="ri-"])::before {
+    content: "\f3c2";
+}
+
+body {
+    min-height: 100vh;
+    background-color: #f9fafb;
+}
+
+.feishu-logo {
+    background-image: url('https://readdy.ai/api/search-image?query=feishu%20logo%20on%20a%20clean%20white%20background%2C%20minimalist%20design%2C%20blue%20color%20scheme%2C%20professional%20corporate%20identity%2C%20high%20quality%20vector%20logo&width=200&height=60&seq=1&orientation=landscape');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+input:focus {
+    outline: none;
+    border-color: #3370ff;
+}
+
+input[type="checkbox"] {
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+    background-color: white;
+    cursor: pointer;
+}
+
+input[type="checkbox"]:checked {
+    background-color: #3370ff;
+    border-color: #3370ff;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='white'%3E%3Cpath fill-rule='evenodd' d='M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z' clip-rule='evenodd'/%3E%3C/svg%3E");
+}
+
+.custom-switch {
+    position: relative;
+    display: inline-block;
+    width: 40px;
+    height: 20px;
+}
+
+.custom-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: .4s;
+    border-radius: 20px;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 16px;
+    width: 16px;
+    left: 2px;
+    bottom: 2px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+}
+
+input:checked + .slider {
+    background-color: #3370ff;
+}
+
+input:checked + .slider:before {
+    transform: translateX(20px);
+}
