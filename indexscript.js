@@ -1,305 +1,217 @@
-document.addEventListener('DOMContentLoaded', function () {
-    const loginForm = document.getElementById('login-form');
-    const unauthenticatedView = document.getElementById('unauthenticated-view');
-    const authenticatedView = document.getElementById('authenticated-view');
-    const logoutBtn = document.getElementById('logout-btn');
-    const currentUser = document.getElementById('current-user');
-    const newGrabForm = document.getElementById('new-grab-form');
+// 飞书云文档API配置
+const API_CONFIG = {
+  baseUrl: "https://www.kdocs.cn/api/v3/ide/file/:file_id/script/:script_id/sync_task",
+  token: "xxx", // 替换为实际的令牌
+  fileId: ":file_id", // 替换为实际的文件ID
+  scriptId: ":script_id" // 替换为实际的脚本ID
+};
 
-    // 检查是否已登录
-    const checkLoginStatus = () => {
-        const isLoggedIn = localStorage.getItem('isLoggedIn');
-        const username = localStorage.getItem('username');
-        if (isLoggedIn === 'true' && username) {
-            unauthenticatedView.classList.add('hidden');
-            authenticatedView.classList.remove('hidden');
-            currentUser.textContent = username.split('@')[0];
-        } else {
-            unauthenticatedView.classList.remove('hidden');
-            authenticatedView.classList.add('hidden');
-        }
-    };
+// DOM元素引用
+const loginForm = document.getElementById('login-form');
+const newGrabForm = document.getElementById('new-grab-form');
+const logoutBtn = document.getElementById('logout-btn');
+const unauthenticatedView = document.getElementById('unauthenticated-view');
+const authenticatedView = document.getElementById('authenticated-view');
+const currentUser = document.getElementById('current-user');
 
-    // 初始检查登录状态
-    checkLoginStatus();
-
-    // 登录表单提交
-    loginForm.addEventListener('submit', async function (e) {
-        e.preventDefault();
-        const username = document.getElementById('username').value;
-        const password = document.getElementById('password').value;
-        const rememberMe = document.getElementById('remember-me').checked;
-
-        // 简单验证
-        if (!username || !password) {
-            alert('请输入飞书账号和密码');
-            return;
-        }
-
-        try {
-            const response = await fetch('your-login-api-url', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ username, password })
-            });
-
-            const data = await response.json();
-            if (response.ok) {
-                localStorage.setItem('isLoggedIn', 'true');
-                localStorage.setItem('username', username);
-                if (rememberMe) {
-                    localStorage.setItem('rememberMe', 'true');
-                } else {
-                    localStorage.removeItem('rememberMe');
-                }
-                checkLoginStatus();
-                alert('登录成功');
-            } else {
-                alert(data.message || '登录失败，请重试');
-            }
-        } catch (error) {
-            alert('网络错误，请重试');
-        }
-    });
-
-    // 退出登录
-    logoutBtn.addEventListener('click', function () {
-        localStorage.removeItem('isLoggedIn');
-        if (localStorage.getItem('rememberMe') !== 'true') {
-            localStorage.removeItem('username');
-        }
-        checkLoginStatus();
-    });
-
-    // 新增抢单表单提交
-    newGrabForm.addEventListener('submit', async function (e) {
-        e.preventDefault();
-        const customerName = document.getElementById('customer-name').value;
-        const customerContact = document.getElementById('customer-contact').value;
-        const customerPhone = document.getElementById('customer-phone').value;
-        const grabTime = document.getElementById('grab-time').value;
-        const priority = document.querySelector('input[name="priority"]:checked').value;
-        const remarks = document.getElementById('remarks').value;
-
-        try {
-            const response = await fetch('your-new-grab-api-url', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    customerName,
-                    customerContact,
-                    customerPhone,
-                    grabTime,
-                    priority,
-                    remarks
-                })
-            });
-
-            const data = await response.json();
-            if (response.ok) {
-                alert('新增抢单成功');
-                newGrabForm.reset();
-            } else {
-                alert(data.message || '新增抢单失败，请重试');
-            }
-        } catch (error) {
-            alert('网络错误，请重试');
-        }
-    });
-
-    // 个人抢单统计图表
-    const initPersonalStatsChart = () => {
-        const chartDom = document.getElementById('personal-stats-chart');
-        if (!chartDom) return;
-        const myChart = echarts.init(chartDom);
-        const option = {
-            animation: false,
-            tooltip: {
-                trigger: 'axis',
-                backgroundColor: 'rgba(255, 255, 255, 0.8)',
-                borderColor: '#e2e8f0',
-                textStyle: {
-                    color: '#1f2937'
-                }
-            },
-            legend: {
-                data: ['抢单数', '成功数'],
-                bottom: 0
-            },
-            grid: {
-                left: '3%',
-                right: '4%',
-                bottom: '15%',
-                top: '10%',
-                containLabel: true
-            },
-            xAxis: {
-                type: 'category',
-                boundaryGap: false,
-                data: ['6.6', '6.7', '6.8', '6.9', '6.10', '6.11', '6.12'],
-                axisLine: {
-                    lineStyle: {
-                        color: '#e2e8f0'
-                    }
-                },
-                axisLabel: {
-                    color: '#1f2937'
-                }
-            },
-            yAxis: {
-                type: 'value',
-                axisLine: {
-                    show: false
-                },
-                axisLabel: {
-                    color: '#1f2937'
-                },
-                splitLine: {
-                    lineStyle: {
-                        color: '#e2e8f0'
-                    }
-                }
-            },
-            series: [
-                {
-                    name: '抢单数',
-                    type: 'line',
-                    smooth: true,
-                    lineStyle: {
-                        width: 3,
-                        color: 'rgba(87, 181, 231, 1)'
-                    },
-                    symbol: 'none',
-                    areaStyle: {
-                        color: {
-                            type: 'linear',
-                            x: 0,
-                            y: 0,
-                            x2: 0,
-                            y2: 1,
-                            colorStops: [
-                                { offset: 0, color: 'rgba(87, 181, 231, 0.2)' },
-                                { offset: 1, color: 'rgba(87, 181, 231, 0.01)' }
-                            ]
-                        }
-                    },
-                    data: [5, 7, 3, 9, 6, 8, 10]
-                },
-                {
-                    name: '成功数',
-                    type: 'line',
-                    smooth: true,
-                    lineStyle: {
-                        width: 3,
-                        color: 'rgba(141, 211, 199, 1)'
-                    },
-                    symbol: 'none',
-                    areaStyle: {
-                        color: {
-                            type: 'linear',
-                            x: 0,
-                            y: 0,
-                            x2: 0,
-                            y2: 1,
-                            colorStops: [
-                                { offset: 0, color: 'rgba(141, 211, 199, 0.2)' },
-                                { offset: 1, color: 'rgba(141, 211, 199, 0.01)' }
-                            ]
-                        }
-                    },
-                    data: [3, 4, 2, 7, 4, 6, 7]
-                }
-            ]
-        };
-        myChart.setOption(option);
-        window.addEventListener('resize', function () {
-            myChart.resize();
-        });
-    };
-
-    // 初始化图表
-    initPersonalStatsChart();
-
-    // 自定义单选框和复选框样式
-    const setupCustomFormControls = () => {
-        // 单选框样式
-        const radioInputs = document.querySelectorAll('input[type="radio"]');
-        radioInputs.forEach(radio => {
-            radio.classList.add('hidden');
-            const wrapper = document.createElement('span');
-            wrapper.className = 'inline-block w-4 h-4 rounded-full border border-gray-300 mr-2 flex-shrink-0 relative';
-            const dot = document.createElement('span');
-            dot.className = 'absolute inset-1 rounded-full bg-primary transform scale-0 transition-transform duration-200';
-            wrapper.appendChild(dot);
-            radio.parentNode.insertBefore(wrapper, radio);
-
-            // 初始状态
-            if (radio.checked) {
-                dot.classList.remove('scale-0');
-                dot.classList.add('scale-100');
-                wrapper.classList.add('border-primary');
-            }
-
-            // 点击事件
-            wrapper.addEventListener('click', () => {
-                const name = radio.getAttribute('name');
-                document.querySelectorAll(`input[name="${name}"]`).forEach(r => {
-                    const siblingDot = r.previousElementSibling.querySelector('span');
-                    const siblingWrapper = r.previousElementSibling;
-                    if (r === radio) {
-                        r.checked = true;
-                        siblingDot.classList.remove('scale-0');
-                        siblingDot.classList.add('scale-100');
-                        siblingWrapper.classList.add('border-primary');
-                    } else {
-                        r.checked = false;
-                        siblingDot.classList.remove('scale-100');
-                        siblingDot.classList.add('scale-0');
-                        siblingWrapper.classList.remove('border-primary');
-                    }
-                });
-            });
-        });
-
-        // 复选框样式
-        const checkboxInputs = document.querySelectorAll('input[type="checkbox"]');
-        checkboxInputs.forEach(checkbox => {
-            checkbox.classList.add('hidden');
-            const wrapper = document.createElement('span');
-            wrapper.className = 'inline-block w-4 h-4 rounded border border-gray-300 mr-2 flex-shrink-0 relative';
-            const checkmark = document.createElement('span');
-            checkmark.className = 'absolute inset-0 flex items-center justify-center text-white opacity-0 transition-opacity duration-200';
-            checkmark.innerHTML = '<i class="ri-check-line ri-xs"></i>';
-            wrapper.appendChild(checkmark);
-            checkbox.parentNode.insertBefore(wrapper, checkbox);
-
-            // 初始状态
-            if (checkbox.checked) {
-                checkmark.classList.remove('opacity-0');
-                checkmark.classList.add('opacity-100');
-                wrapper.classList.add('bg-primary', 'border-primary');
-            }
-
-            // 点击事件
-            wrapper.addEventListener('click', () => {
-                checkbox.checked = !checkbox.checked;
-                if (checkbox.checked) {
-                    checkmark.classList.remove('opacity-0');
-                    checkmark.classList.add('opacity-100');
-                    wrapper.classList.add('bg-primary', 'border-primary');
-                } else {
-                    checkmark.classList.remove('opacity-100');
-                    checkmark.classList.add('opacity-0');
-                    wrapper.classList.remove('bg-primary', 'border-primary');
-                }
-            });
-        });
-    };
-
-    // 初始化自定义表单控件
-    setupCustomFormControls();
+// 初始化
+document.addEventListener('DOMContentLoaded', function() {
+  // 检查本地存储中是否有用户信息
+  const user = localStorage.getItem('currentUser');
+  if (user) {
+    currentUser.textContent = user;
+    switchToAuthenticatedView();
+  }
+  
+  // 初始化个人抢单统计图表
+  initPersonalStatsChart();
 });
+
+// 登录表单提交处理
+loginForm.addEventListener('submit', function(e) {
+  e.preventDefault();
+  
+  const username = document.getElementById('username').value;
+  const password = document.getElementById('password').value;
+  
+  // 发送登录请求
+  sendRequest('login', { username, password })
+    .then(response => {
+      if (response.success) {
+        // 登录成功，保存用户信息并切换视图
+        localStorage.setItem('currentUser', username);
+        currentUser.textContent = username;
+        switchToAuthenticatedView();
+      } else {
+        // 登录失败，显示错误信息
+        alert('登录失败：' + response.message);
+      }
+    })
+    .catch(error => {
+      console.error('登录请求出错:', error);
+      alert('登录请求出错，请稍后重试');
+    });
+});
+
+// 登出按钮点击处理
+logoutBtn.addEventListener('click', function() {
+  // 清除用户信息并切换视图
+  localStorage.removeItem('currentUser');
+  switchToUnauthenticatedView();
+});
+
+// 新增抢单表单提交处理
+newGrabForm.addEventListener('submit', function(e) {
+  e.preventDefault();
+  
+  // 收集表单数据
+  const formData = {
+    customerName: document.getElementById('customer-name').value,
+    customerContact: document.getElementById('customer-contact').value,
+    customerPhone: document.getElementById('customer-phone').value,
+    grabTime: document.getElementById('grab-time').value,
+    priority: document.querySelector('input[name="priority"]:checked').value,
+    remarks: document.getElementById('remarks').value,
+    userId: currentUser.textContent,
+    createTime: new Date().toISOString()
+  };
+  
+  // 发送新增抢单请求
+  sendRequest('addGrab', formData)
+    .then(response => {
+      if (response.success) {
+        // 新增成功，重置表单并显示成功信息
+        newGrabForm.reset();
+        alert('抢单信息已成功添加！');
+        // 这里可以添加刷新抢单记录的逻辑
+      } else {
+        // 新增失败，显示错误信息
+        alert('添加抢单信息失败：' + response.message);
+      }
+    })
+    .catch(error => {
+      console.error('新增抢单请求出错:', error);
+      alert('新增抢单请求出错，请稍后重试');
+    });
+});
+
+// 切换到已登录视图
+function switchToAuthenticatedView() {
+  unauthenticatedView.classList.add('hidden');
+  authenticatedView.classList.remove('hidden');
+}
+
+// 切换到未登录视图
+function switchToUnauthenticatedView() {
+  unauthenticatedView.classList.remove('hidden');
+  authenticatedView.classList.add('hidden');
+}
+
+// 发送请求到飞书云文档API
+function sendRequest(type, data) {
+  return new Promise((resolve, reject) => {
+    const requestData = JSON.stringify({
+      "Context": {
+        "argv": {
+          type,
+          ...data
+        },
+        "sheet_name": "客户抢单数据",
+        "range": "$B$156"
+      }
+    });
+    
+    const xhr = new XMLHttpRequest();
+    xhr.withCredentials = true;
+    
+    xhr.addEventListener("readystatechange", function() {
+      if (this.readyState === this.DONE) {
+        if (this.status >= 200 && this.status < 300) {
+          try {
+            const response = JSON.parse(this.responseText);
+            resolve(response);
+          } catch (error) {
+            reject(new Error('解析响应数据失败'));
+          }
+        } else {
+          reject(new Error(`请求失败，状态码：${this.status}`));
+        }
+      }
+    });
+    
+    const url = API_CONFIG.baseUrl
+      .replace(':file_id', API_CONFIG.fileId)
+      .replace(':script_id', API_CONFIG.scriptId);
+    
+    xhr.open("POST", url);
+    xhr.setRequestHeader("Content-Type", "application/json");
+    xhr.setRequestHeader("AirScript-Token", API_CONFIG.token);
+    
+    xhr.send(requestData);
+  });
+}
+
+// 获取抢单记录
+function fetchGrabRecords() {
+  return sendRequest('getGrabRecords', {})
+    .then(response => {
+      if (response.success) {
+        return response.data;
+      } else {
+        throw new Error(response.message);
+      }
+    });
+}
+
+// 初始化个人抢单统计图表
+function initPersonalStatsChart() {
+  const chartDom = document.getElementById('personal-stats-chart');
+  if (!chartDom) return;
+  
+  const myChart = echarts.init(chartDom);
+  
+  // 示例数据
+  const option = {
+    title: {
+      text: '个人抢单统计',
+      left: 'center'
+    },
+    tooltip: {
+      trigger: 'axis'
+    },
+    legend: {
+      data: ['抢单成功', '抢单失败', '处理中']
+    },
+    xAxis: {
+      type: 'category',
+      data: ['周一', '周二', '周三', '周四', '周五', '周六', '周日']
+    },
+    yAxis: {
+      type: 'value'
+    },
+    series: [
+      {
+        name: '抢单成功',
+        data: [5, 7, 6, 8, 9, 12, 10],
+        type: 'line'
+      },
+      {
+        name: '抢单失败',
+        data: [2, 3, 1, 2, 1, 3, 2],
+        type: 'line'
+      },
+      {
+        name: '处理中',
+        data: [1, 2, 3, 1, 2, 1, 0],
+        type: 'line'
+      }
+    ]
+  };
+  
+  myChart.setOption(option);
+  
+  // 监听窗口大小变化，调整图表
+  window.addEventListener('resize', function() {
+    myChart.resize();
+  });
+}
