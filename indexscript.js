@@ -2,8 +2,8 @@
 const API_CONFIG = {
   baseUrl: "https://www.kdocs.cn/api/v3/ide/file/:file_id/script/:script_id/sync_task",
   token: "6pGQUK9bFZUsOZqijSs7Vs", // 替换为实际的令牌
-  fileId: ":ckHF3lpIzrlO", // 替换为实际的文件ID
-  scriptId: ":V2-7L58na42zKAfuIc9afa5bo" // 替换为实际的脚本ID
+  fileId: "ckHF3lpIzrlO", // 替换为实际的文件ID
+  scriptId: "V2-7L58na42zKAfuIc9afa5bo" // 替换为实际的脚本ID
 };
 
 // DOM元素引用
@@ -142,7 +142,7 @@ function sendRequest(type, data) {
     const url = API_CONFIG.baseUrl
       .replace(':file_id', API_CONFIG.fileId)
       .replace(':script_id', API_CONFIG.scriptId);
-    
+    console.log(url)
     xhr.open("POST", url);
     xhr.setRequestHeader("Content-Type", "application/json");
     xhr.setRequestHeader("AirScript-Token", API_CONFIG.token);
