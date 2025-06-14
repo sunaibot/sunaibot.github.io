@@ -138,7 +138,7 @@ function buildUrlWithParams(url, params) {
     return url + (url.indexOf('?') !== -1 ? '&' : '?') + queryString;
 }
 
-// 发送请求到飞书云文档API
+// 发送请求到金山多维表airscript webhook API
 function sendRequest(type, data) {
     return new Promise((resolve, reject) => {
         const requestData = {
@@ -158,13 +158,13 @@ function sendRequest(type, data) {
         
         // 使用CORS代理
         const proxyUrl = CORS_PROXY + encodeURIComponent(url);
-        
+        console.log(proxyUrl)
         // 设置请求选项
         const options = {
             method: type === 'getGrabRecords' ? 'GET' : 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${API_CONFIG.token}`
+                'AirScript-Token': `${API_CONFIG.token}`
             }
         };
         
