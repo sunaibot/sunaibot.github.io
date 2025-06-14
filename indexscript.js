@@ -218,10 +218,10 @@ function sendRequest(type, data) {
             }
         };
 
-        const url = API_CONFIG.baseUrl
-          .replace(':file_id', API_CONFIG.fileId)
-          .replace(':script_id', API_CONFIG.scriptId);
-
+        // const url = API_CONFIG.baseUrl
+        //   .replace(':file_id', API_CONFIG.fileId)
+        //   .replace(':script_id', API_CONFIG.scriptId);
+        const url = 'https://www.kdocs.cn/api/v3/ide/file/ckHF3lpIzrlO/script/V2-7L58na42zKAfuIc9afa5bo/sync_task'
         if (type === 'getGrabRecords') {
             // 如果是获取抢单记录的请求，使用GET请求
             sendGetRequest(url, requestData.Context.argv, function (responseText) {
