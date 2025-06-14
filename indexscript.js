@@ -6,6 +6,9 @@ const API_CONFIG = {
     scriptId: "V2-7L58na42zKAfuIc9afa5bo" // 替换为实际的脚本ID
 };
 
+// 使用CORS代理服务
+const CORS_PROXY = "https://api.allorigins.win/raw?url=";
+
 // DOM元素引用
 const loginForm = document.getElementById('login-form');
 const newGrabForm = document.getElementById('new-grab-form');
@@ -135,75 +138,6 @@ function buildUrlWithParams(url, params) {
     return url + (url.indexOf('?') !== -1 ? '&' : '?') + queryString;
 }
 
-// 发送GET请求
-function sendGetRequest(url, params, callback) {
-    // 创建一个隐藏的iframe元素
-    var iframe = document.createElement('iframe');
-    iframe.name = 'getFrame';
-    iframe.style.display = 'none';
-    document.body.appendChild(iframe);
-
-    // 构建完整的URL，包含参数
-    var fullUrl = buildUrlWithParams(url, params);
-    // 添加时间戳，避免缓存
-    var timestamp = new Date().getTime();
-    var uniqueUrl = fullUrl + '&timestamp=' + timestamp;
-
-    // 设置iframe的src属性
-    iframe.src = uniqueUrl;
-
-    // 监听iframe的加载完成事件
-    iframe.onload = function () {
-        // 获取iframe的内容
-        var iframeContent = iframe.contentDocument.body.textContent || iframe.contentDocument.body.innerText;
-        // 调用回调函数处理响应数据
-        callback(iframeContent);
-        // 移除iframe元素
-        document.body.removeChild(iframe);
-    };
-}
-
-// 发送POST请求
-function sendPostRequest(url, data, callback) {
-    // 创建一个隐藏的iframe元素
-    var iframe = document.createElement('iframe');
-    iframe.name = 'postFrame';
-    iframe.style.display = 'none';
-    document.body.appendChild(iframe);
-
-    // 创建一个form元素
-    var form = document.createElement('form');
-    form.action = url;
-    form.method = 'post';
-    form.target = 'postFrame';
-    document.body.appendChild(form);
-
-    // 将请求数据添加到form中
-    for (var key in data) {
-        if (data.hasOwnProperty(key)) {
-            var input = document.createElement('input');
-            input.type = 'hidden';
-            input.name = key;
-            input.value = JSON.stringify(data[key]);
-            form.appendChild(input);
-        }
-    }
-
-    // 监听iframe的加载完成事件
-    iframe.onload = function () {
-        // 获取iframe的内容
-        var iframeContent = iframe.contentDocument.body.textContent || iframe.contentDocument.body.innerText;
-        // 调用回调函数处理响应数据
-        callback(iframeContent);
-        // 移除iframe和form元素
-        document.body.removeChild(iframe);
-        document.body.removeChild(form);
-    };
-
-    // 提交form表单
-    form.submit();
-}
-
 // 发送请求到飞书云文档API
 function sendRequest(type, data) {
     return new Promise((resolve, reject) => {
@@ -218,31 +152,37 @@ function sendRequest(type, data) {
             }
         };
 
-        // const url = API_CONFIG.baseUrl
-        //   .replace(':file_id', API_CONFIG.fileId)
-        //   .replace(':script_id', API_CONFIG.scriptId);
-        const url = 'https://www.kdocs.cn/api/v3/ide/file/ckHF3lpIzrlO/script/V2-7L58na42zKAfuIc9afa5bo/sync_task'
-        if (type === 'getGrabRecords') {
-            // 如果是获取抢单记录的请求，使用GET请求
-            sendGetRequest(url, requestData.Context.argv, function (responseText) {
-                try {
-                    const response = JSON.parse(responseText);
-                    resolve(response);
-                } catch (error) {
-                    reject(new Error('解析响应数据失败'));
-                }
-            });
-        } else {
-            // 其他请求使用POST请求
-            sendPostRequest(url, requestData, function (responseText) {
-                try {
-                    const response = JSON.parse(responseText);
-                    resolve(response);
-                } catch (error) {
-                    reject(new Error('解析响应数据失败'));
-                }
-            });
+        const url = API_CONFIG.baseUrl
+          .replace(':file_id', API_CONFIG.fileId)
+          .replace(':script_id', API_CONFIG.scriptId);
+        
+        // 使用CORS代理
+        const proxyUrl = CORS_PROXY + encodeURIComponent(url);
+        
+        // 设置请求选项
+        const options = {
+            method: type === 'getGrabRecords' ? 'GET' : 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${API_CONFIG.token}`
+            }
+        };
+        
+        // 添加请求体（POST请求）
+        if (options.method === 'POST') {
+            options.body = JSON.stringify(requestData);
         }
+
+        // 使用fetch发送请求
+        fetch(proxyUrl, options)
+          .then(response => {
+              if (!response.ok) {
+                  throw new Error(`HTTP error! status: ${response.status}`);
+              }
+              return response.json();
+          })
+          .then(response => resolve(response))
+          .catch(error => reject(error));
     });
 }
 
