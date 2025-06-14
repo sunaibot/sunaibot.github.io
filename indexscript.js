@@ -128,17 +128,7 @@ function hideNewGrabForm() {
     newGrabFormContainer.classList.add('hidden');
 }
 
-// 构建带参数的URL
-function buildUrlWithParams(url, params) {
-    const queryString = Object.keys(params)
-      .map(function (key) {
-            return encodeURIComponent(key) + '=' + encodeURIComponent(params[key]);
-        })
-      .join('&');
-    return url + (url.indexOf('?') !== -1 ? '&' : '?') + queryString;
-}
-
-// 发送请求到金山多维表airscript webhook API
+// 发送请求到飞书云文档API
 function sendRequest(type, data) {
     return new Promise((resolve, reject) => {
         const requestData = {
@@ -158,14 +148,15 @@ function sendRequest(type, data) {
         
         // 使用CORS代理
         const proxyUrl = CORS_PROXY + encodeURIComponent(url);
-        console.log(proxyUrl)
-        // 设置请求选项
+        
+        // 设置请求选项 - 使用必需的 AirScript-Token 头部
         const options = {
             method: type === 'getGrabRecords' ? 'GET' : 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'AirScript-Token': `${API_CONFIG.token}`
-            }
+                'AirScript-Token': API_CONFIG.token // 使用必需的头部
+            },
+            mode: 'cors' // 确保CORS模式
         };
         
         // 添加请求体（POST请求）
